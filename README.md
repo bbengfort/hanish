@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/bbengfort/hanish.png?label=ready&title=Ready)](https://waffle.io/bbengfort/hanish)
 # Hanish
 
 **A slackbot that makes small talk about the weather.**

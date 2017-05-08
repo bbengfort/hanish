@@ -34,6 +34,18 @@ EPILOG = "Please report bugs or issues to github.com/bbengfort/hanish"
 
 
 ##########################################################################
+## Command Functionality
+##########################################################################
+
+def weather(args):
+    """
+    Print out the weather for the given zipcode.
+    """
+    app = hanish.App()
+    print(app.weather(args.zipcode))
+
+
+##########################################################################
 ## Main Method
 ##########################################################################
 
@@ -43,15 +55,21 @@ if __name__ == '__main__':
     if LOAD_DOTENV:
         dotenv.load_dotenv(dotenv.find_dotenv())
 
-    # Create the command line argument parser
+    # Create the command line argument parser and subparsers
     parser = argparse.ArgumentParser(
         description=DESCRIPTION, version=VERSION, epilog=EPILOG,
     )
+    subparsers = parser.add_subparsers(title="commands")
+
+    # Add the weather command subparser
+    wp = subparsers.add_parser('weather', help='quick lookup of the weather')
+    wp.add_argument('zipcode', nargs="?", default=None, help='the zipcode to look weather up for')
+    wp.set_defaults(func=weather)
 
     # Parse the arguments and execute the command
     args = parser.parse_args()
     try:
-        print("stub implementation")
-        parser.exit(0)
+        args.func(args)
+        parser.exit(0, "")
     except Exception as e:
         parser.error(str(e))

@@ -1,28 +1,27 @@
-# hanish
-# Provides the core functionality for the hanish weatherbot.
+# tests.test_darksky
+# Tests for the Dark Sky API handlers.
 #
 # Author:   Benjamin Bengfort <benjamin@bengfort.com>
-# Created:  Mon May 08 11:07:14 2017 -0400
+# Created:  Mon May 08 15:41:04 2017 -0400
 #
 # Copyright (C) 2016 Bengfort.com
 # For license information, see LICENSE.txt
 #
-# ID: __init__.py [] benjamin@bengfort.com $
+# ID: test_darksky.py [] benjamin@bengfort.com $
 
 """
-The hanish library provides the core functionality for the hanish weatherbot.
+Tests for the Dark Sky API handlers.
 """
 
 ##########################################################################
 ## Imports
 ##########################################################################
 
-from .app import App 
-from .version import get_version, __version_info__
+import unittest
+
+from hanish.darksky import *
 
 
 ##########################################################################
-## Package Version
+## Dark Sky API Tests
 ##########################################################################
-
-__version__ = get_version(short=True)

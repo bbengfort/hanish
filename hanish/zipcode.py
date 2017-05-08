@@ -73,7 +73,7 @@ class ZipCodeDB(object):
         db = klass()
         cursor = db.conn.cursor()
 
-        # Read the data from the CSV file and insert
+        # Read the data from the CSV file and insert into db 
         with open(path, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
@@ -135,7 +135,7 @@ class ZipCodeDB(object):
             "SELECT latitude, longitude FROM zipcodes WHERE zipcode=?", (zipcode,)
         )
 
-        # Fetch, validate, and return the value 
+        # Fetch, validate, and return the value
         value = cursor.fetchone()
         if value is None:
             raise HanishValueError(

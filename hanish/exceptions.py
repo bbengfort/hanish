@@ -24,6 +24,13 @@ class HanishException(Exception):
     pass
 
 
+class ImproperlyConfigured(HanishException):
+    """
+    A required environment or configuration value was not provided.
+    """
+    pass
+
+
 class HanishTypeError(HanishException, TypeError):
     """
     Unexpected hanish application-specifich type.
@@ -41,5 +48,12 @@ class HanishValueError(HanishException, ValueError):
 class DatabaseError(HanishException):
     """
     Something went wrong with a hanish database.
+    """
+    pass
+
+
+class DarkSkyException(HanishException):
+    """
+    Something went wrong accessing the Dark Sky API.
     """
     pass

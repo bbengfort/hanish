@@ -23,10 +23,11 @@ Create a virtual environment and install the dependencies. Note that Hanish is d
 
 Add the following environment variables. The simplest way to do this is to create a `.env` file in your current working directory, the app will automatically load this file into the environment if it can find it.
 
-    DEFAULT_ZIP_CODE=90210
     SLACK_BOT_NAME=myhanish
     SLACK_ACCESS_TOKEN=xoxb-slackaccesstoken
     DARKSKY_ACCESS_TOKEN=darkskyaccesstoken
+    DEFAULT_ZIP_CODE=90210
+    ZIPCODE_DATABASE=path/to/ziplatlon.csv
 
 Note that the Hanish chatbot is primarily configured from the environment. Hanish commands are run from the `hanishbot.py` script in the root of the repository (feel free to add this to your `$PATH`). To see all the commands and arguments, use help:
 

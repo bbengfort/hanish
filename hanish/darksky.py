@@ -77,7 +77,7 @@ class DarkSky(object):
         # limit and deals with zip codes and method responses specificially.
         # Cache is a third party utility, ExpiringDict, which we use here for
         # speed of development, but should implement ourselves in the future.
-        self.cache = ExpiringDict(max_len=limit, max_age_seconds=cache)
+        self.cache = ExpiringDict(max_len=limit, max_age_seconds=cache or 0)
 
     def forecast(self, lat, lon,
                  exclude=None, extend=False, lang="en", units="auto"):

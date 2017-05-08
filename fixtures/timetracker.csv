@@ -1,4 +1,5 @@
 date,start,end,notes
 2017-05-08,10:28,11:19,set up a standard Python application skeleton, research
 2017-05-08,12:00,13:02,zip code database and geo-coordinates handling
-2017-05-08,13:08,,turn the lights on for dark sky API requests
+2017-05-08,13:08,15:41,turn the lights on for dark sky API requests
+2017-05-08,15:58,16:41,mocked Dark Sky API and testing the API

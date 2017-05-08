@@ -2,6 +2,9 @@
 
 **A slackbot that makes small talk about the weather.**
 
+[![Build Status](https://travis-ci.org/bbengfort/hanish.svg?branch=master)](https://travis-ci.org/bbengfort/hanish)
+[![Coverage Status](https://coveralls.io/repos/github/bbengfort/hanish/badge.svg?branch=master)](https://coveralls.io/github/bbengfort/hanish?branch=master)
+
 ## Name Origin
 
 The name [Hanish](https://nameberry.com/babyname/Hanish) means &ldquo;one who forewarns of storms&rdquo;. The name has a literary origin, from the [Epic of Gilgamesh](https://en.wikipedia.org/wiki/Gilgamesh_flood_myth), a legend that tells of a great flood. The thunder god, Adad, and the cloud and storm gods Shullar and Hanish all foretold of the flood by rumbling and coming over mountains and land.

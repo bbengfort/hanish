@@ -57,3 +57,10 @@ class DarkSkyException(HanishException):
     Something went wrong accessing the Dark Sky API.
     """
     pass
+
+
+class SlackException(HanishException):
+    """
+    Something went wrong with the Slack API.
+    """
+    pass

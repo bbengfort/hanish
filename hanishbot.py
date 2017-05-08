@@ -45,6 +45,14 @@ def weather(args):
     print(bot.weather(args.zipcode))
 
 
+def runbot(args):
+    """
+    Connect to the Slack API and listen for weather queries.
+    """
+    bot = hanish.Bot()
+    bot.run() 
+
+
 ##########################################################################
 ## Main Method
 ##########################################################################
@@ -65,6 +73,10 @@ if __name__ == '__main__':
     wp = subparsers.add_parser('weather', help='quick lookup of the weather')
     wp.add_argument('zipcode', nargs="?", default=None, help='the zipcode to look weather up for')
     wp.set_defaults(func=weather)
+
+    # Add the run command subparser
+    rp = subparsers.add_parser('run', help='run the weather chatbot')
+    rp.set_defaults(func=runbot)
 
     # Parse the arguments and execute the command
     args = parser.parse_args()

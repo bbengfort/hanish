@@ -1,5 +1,5 @@
-# tests.test_app
-# Tests the primary App interface for the hanish module.
+# tests.test_bot
+# Tests the primary Bot interface for the hanish module.
 #
 # Author:   Benjamin Bengfort <benjamin@bengfort.com>
 # Created:  Mon May 08 15:06:46 2017 -0400
@@ -7,10 +7,10 @@
 # Copyright (C) 2016 Bengfort.com
 # For license information, see LICENSE.txt
 #
-# ID: test_app.py [] benjamin@bengfort.com $
+# ID: test_bot.py [] benjamin@bengfort.com $
 
 """
-Tests the primary App interface for the hanish module.
+Tests the primary Bot interface for the hanish module.
 """
 
 ##########################################################################
@@ -20,14 +20,14 @@ Tests the primary App interface for the hanish module.
 import os
 import unittest
 
-from hanish.app import *
+from hanish.bot import *
 
 
 ##########################################################################
-## Hanish App Tests
+## Hanish Bot Tests
 ##########################################################################
 
-class AppHelpersTests(unittest.TestCase):
+class BotHelpersTests(unittest.TestCase):
 
     def setUp(self):
         # Add some environment variables

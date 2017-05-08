@@ -17,7 +17,7 @@ The hanish library provides the core functionality for the hanish weatherbot.
 ## Imports
 ##########################################################################
 
-from .app import App 
+from .bot import Bot
 from .version import get_version, __version_info__
 
 

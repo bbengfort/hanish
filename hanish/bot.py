@@ -1,5 +1,5 @@
-# hanish.app
-# Primary interface to the hanish app.
+# hanish.bot
+# Primary interface to the hanish Slack bot.
 #
 # Author:   Benjamin Bengfort <benjamin@bengfort.com>
 # Created:  Mon May 08 14:44:06 2017 -0400
@@ -7,11 +7,11 @@
 # Copyright (C) 2016 Bengfort.com
 # For license information, see LICENSE.txt
 #
-# ID: app.py [] benjamin@bengfort.com $
+# ID: bot.py [] benjamin@bengfort.com $
 
 """
-Primary interface to the hanish app. The app listens for chat messages and
-responds appropriately, also looking up weather by zip code.
+Primary interface to the hanish Slack bot. The bot listens for chat messages
+and responds appropriately, also looking up weather by zip code.
 """
 
 ##########################################################################
@@ -55,16 +55,16 @@ def environ_default(kwargs, name, envvar, default=None, required=False):
 
 
 ##########################################################################
-## Hanish App
+## Hanish Bot
 ##########################################################################
 
-class App(object):
+class Bot(object):
     """
-    The App encapsulates the behavior and functionality of Hanish app,
+    A Bot encapsulates the behavior and functionality of Hanish slackbot,
     allowing it to query the Dark Sky weather service, lookup geo-coordinates
     by zip code and to listen for and respond to messages from users on Slack.
 
-    The App is configured primarily from environment variables, though every
+    The Bot is configured primarily from environment variables, though every
     configuration parameter can be overriden in the constructor. However, for
     normal usage, it is preferred that configuration is stored in the env.
 

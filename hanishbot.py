@@ -41,8 +41,8 @@ def weather(args):
     """
     Print out the weather for the given zipcode.
     """
-    app = hanish.App()
-    print(app.weather(args.zipcode))
+    bot = hanish.Bot()
+    print(bot.weather(args.zipcode))
 
 
 ##########################################################################

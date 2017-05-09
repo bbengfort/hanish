@@ -20,7 +20,7 @@ Tests for the Dark Sky API handlers.
 import os
 import json
 import unittest
-import requests_mock as rm
+import requests_mock
 
 from hanish.darksky import *
 
@@ -57,7 +57,7 @@ def load_weather_json(request, context):
 ## Dark Sky API Tests
 ##########################################################################
 
-@rm.Mocker()
+@requests_mock.Mocker()
 class DarkSkyTests(unittest.TestCase):
 
     def test_darksky_request(self, m):

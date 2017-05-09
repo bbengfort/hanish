@@ -29,9 +29,11 @@ except ImportError:
     import mock
 
 from hanish.bot import *
+from .test_darksky import WEATHER
 from .test_zipcode import FIXTURES, ZIPCODES
 
 
+RTM_MSG = os.path.join(FIXTURES, "rtm.json")
 MEMBERS = os.path.join(FIXTURES, "members.json")
 
 
@@ -211,3 +213,51 @@ class BotTests(unittest.TestCase):
 
         for msg in table:
             self.assertIsNotNone(bot.atbotid.search(msg))
+
+    def test_chat_handling_and_responses(self):
+        """
+        Tests the chat handling and responses for a stream.
+        """
+
+        # Load the messages and weather
+        with open(RTM_MSG, 'r') as f:
+            messages = [
+                json.loads(line.strip())
+                for line in f
+            ]
+
+        with open(WEATHER, 'r') as f:
+            weather = json.load(f)
+
+        # Create a bot and patch the slack client
+        bot = Bot()
+        bot._botid = "UTEST3210"
+        bot.darksky.forecast = mock.MagicMock(return_value=weather)
+        bot.slack.rtm_connect = mock.MagicMock(return_value=True)
+        bot.slack.rtm_read = mock.MagicMock(return_value=messages)
+        bot.slack.api_call = mock.MagicMock()
+
+        # Handle the messages
+        bot.read_rtm_channel()
+
+        # Default bot.post call args and kwargs
+        args = ('chat.postMessage',)
+        kwargs = {'as_user': True, 'channel': u'CTESTCHAN'}
+
+        # Closure to create kwargs for testing bot.post
+        def make_call(response):
+            kws = {'text': response}
+            kws.update(kwargs)
+            return mock.call(*args, **kws)
+
+        # Make assertions about the handling
+        self.assertEqual(len(bot.slack.api_call.mock_calls), 7)
+        bot.slack.api_call.assert_has_calls([
+            make_call(u"Currently in 20001 it is 54.4\xb0F and mostly cloudy. It will be mostly cloudy throughout the day."),
+            make_call(u"Light rain on Sunday and Monday, with temperatures rising to 62\xb0F on Wednesday."),
+            make_call("I have made 0 Dark Sky API calls today."),
+            make_call(u"Currently in 58054 it is 54.4\xb0F and mostly cloudy. It will be mostly cloudy throughout the day."),
+            make_call(u"Currently in 90210 it is 54.4\xb0F and mostly cloudy. It will be mostly cloudy throughout the day."),
+            make_call(u"Currently in 20742 it is 54.4\xb0F and mostly cloudy. It will be mostly cloudy throughout the day."),
+            make_call("I'm happy to chat about the weather,  unfortunately I don't understand what you're asking."),
+        ])

@@ -26,6 +26,7 @@ import json
 import time
 import signal
 
+from .chat import *
 from .exceptions import *
 from .utils import memoized
 from .darksky import DarkSky
@@ -115,9 +116,6 @@ class Bot(object):
         slack_api_key = environ_default(config, "slack_api_key", "SLACK_ACCESS_TOKEN", required=True)
         self.slack  = SlackClient(slack_api_key)
 
-        # Fetch and cache the current weather at startup
-        self.weather()
-
     @memoized
     def commands(self):
         """
@@ -181,6 +179,9 @@ class Bot(object):
         # TODO: use threads to better manage communication
         self.shutdown = False
         signal.signal(signal.SIGINT, lambda signal, frame: self.stop())
+
+        # Fetch and cache the current weather at startup
+        self.weather()
 
         # Connect to the real time message API
         if self.slack.rtm_connect():
@@ -263,7 +264,8 @@ class Bot(object):
                     handler(msg)
                 except HanishException as e:
                     # Respond with hanish exceptions
-                    self.post(msg['channel'], str(e))
+                    response = "Sorry, there was a problem with your request: {}".format(e)
+                    self.post(msg['channel'], response)
                 except Exception as e:
                     # Fatal exception has occurred
                     self.post(msg['channel'], "A fatal exception has occurred!")
@@ -284,18 +286,10 @@ class Bot(object):
         weather = self.weather()
 
         if period == "now":
-            currently = weather['currently']
-            hourly = weather['hourly']
-            response  = (
-                u"Currently in {} it is {:0.1f}\u00b0F and {}. "
-                u"It will be {}"
-            ).format(
-                weather['zipcode'], currently['temperature'],
-                currently['summary'].lower(), hourly['summary'].lower(),
-            )
+            response = weather_currently(weather)
 
         if period == "tomorrow":
-            response = weather['daily']['summary']
+            response = weather_tomorrow(weather)
 
         self.post(msg['channel'], response)
 
@@ -308,16 +302,7 @@ class Bot(object):
             zipcode = match.group(1)
             weather = self.weather(zipcode)
 
-            currently = weather['currently']
-            hourly = weather['hourly']
-            response  = (
-                u"Currently in {} it is {:0.1f}\u00b0F and {}. "
-                u"It will be {}"
-            ).format(
-                weather['zipcode'], currently['temperature'],
-                currently['summary'].lower(), hourly['summary'].lower(),
-            )
-
+            response = weather_currently(weather)
             self.post(msg['channel'], response)
 
     def handle_darksky_command(self, msg):

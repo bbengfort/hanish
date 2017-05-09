@@ -150,7 +150,7 @@ class ZipCodeDB(object):
         value = cursor.fetchone()
         if value is None:
             raise HanishValueError(
-                "unknown zipcode '{}': no geocoordinates".format(zipcode)
+                "could not find zipcode '{}'".format(zipcode)
             )
 
         return value

@@ -5,4 +5,5 @@ date,start,end,notes
 2017-05-08,15:58,16:41,"mocked Dark Sky API and testing the API"
 2017-05-08,18:17,19:20,"initial Slack client and slack API, filter @botid msgs"
 2017-05-09,10:41,11:58,"command parsing, slackclient mock and testing"
-2017-05-09,12:33,,"responses, integration, and error handling"
+2017-05-09,12:33,13:34,"responses, integration, and error handling"
+2017-05-09,14:48,,""

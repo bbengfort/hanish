@@ -25,4 +25,15 @@ Note that the Hanish chatbot is primarily configured from the environment. Hanis
 
     $ ./hanishbot.py --help
 
-This README.md will be updated with more commands and instructions as they are added to the application.
+Once configured, the best thing to do is to simply run the bot to respond to Slack messages:
+
+    $ ./hanishbot.py run
+
+You should be able to open Slack and start chatting to the weather bot, issuing commands such as:
+
+    @hanishbot weather now
+    @hanishbot weather tomorrow
+    @hanishbot weather in 90210
+    @hanishbot darksky limit
+
+And the bot will happily reply with general information!    

@@ -25,6 +25,7 @@ import re
 import json
 import time
 import signal
+import schedule
 
 from .chat import *
 from .exceptions import *
@@ -98,6 +99,9 @@ class Bot(object):
     """
 
     def __init__(self, **config):
+        # Holds the weather for yesterday to check if things have changed.
+        self.yesterday = None
+
         # NOTE: Normally PEP8 requires breaks at 78 chars, but longer here so
         # that I can more quickly see the configurations and variable names.
         # Get app properties from the configuration.
@@ -183,6 +187,9 @@ class Bot(object):
         # Fetch and cache the current weather at startup
         self.weather()
 
+        # Schedule timed events
+        self.set_schedule()
+
         # Connect to the real time message API
         if self.slack.rtm_connect():
             # TODO: add better chat logging
@@ -196,6 +203,9 @@ class Bot(object):
 
                 # Check to see if anything has come through the channel
                 self.read_rtm_channel()
+
+                # Run any scheduled tasks
+                schedule.run_pending()
 
                 # Sleep for a bit until the next time we read the channel
                 time.sleep(POLLING_INTERVAL)
@@ -333,6 +343,12 @@ class Bot(object):
             "chat.postMessage", channel=channel, text=response, as_user=True
         )
 
+    def set_schedule(self):
+        """
+        Sets the schedule to do tasks on demand.
+        """
+        schedule.every().day.at("9:00").do(self.weather_notice)
+
     def weather(self, zipcode=None):
         """
         Quick lookup of the current weather for a given zipcode. If no zipcode
@@ -361,3 +377,33 @@ class Bot(object):
         forecast['zipcode'] = zipcode
         forecast['api_calls'] = self.darksky.n_api_calls
         return forecast
+
+    def weather_notice(self):
+        """
+        Detects if there is any material change in the weather and alerts the
+        channel. This method is scheduled to run every day at 9:00am
+        """
+        # Keep track if we should alert or not, and get the current weather.
+        alert   = False
+        weather = self.weather()
+
+        if self.yesterday:
+            # Fetch weather for yesterday and today
+            current = weather['hourly']['summary']
+            yesterday = self.yesterday['hourly']['summary']
+
+            # Detect if there has been a change
+            # TODO: Define material change and update accordingly
+            if current != yeseterday:
+                alert = True
+        else:
+            alert = True
+
+        # If alert, post a message.
+        if alert:
+            msg = "Good morning, @channel! A quick update on the weather. "
+            msg += weather_currently(weather)
+            self.post("#general", msg)
+
+        # Save today's weather for tomorrow
+        self.yesterday = weather

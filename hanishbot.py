@@ -18,6 +18,7 @@ Primary entry point and application runner for the Hanish bot.
 ## Imports
 ##########################################################################
 
+import time
 import dotenv
 import hanish
 import argparse
@@ -37,12 +38,29 @@ EPILOG = "Please report bugs or issues to github.com/bbengfort/hanish"
 ## Command Functionality
 ##########################################################################
 
-def weather(args):
+def chat(args):
     """
-    Print out the weather for the given zipcode.
+    Sends a single debug chat message to the bot and gets a response.
     """
+
+    # TODO: Don't hack this together, but do something a bit better.
+    # Closure to monkey-patch bot to print instead of post to Slack.
+    def console_post(channel, message):
+        print(message)
+
+    # Create at patch the bot
     bot = hanish.Bot()
-    print(bot.weather(args.zipcode))
+    bot.post = console_post
+
+    # Create the message
+    msg = {
+        'ts': time.time(),
+        'channel': 'console',
+        'text': ' '.join(args.message),
+    }
+
+    # Handle the message 
+    bot.handle_message(msg)
 
 
 def runbot(args):
@@ -69,10 +87,10 @@ if __name__ == '__main__':
     )
     subparsers = parser.add_subparsers(title="commands")
 
-    # Add the weather command subparser
-    wp = subparsers.add_parser('weather', help='quick lookup of the weather')
-    wp.add_argument('zipcode', nargs="?", default=None, help='the zipcode to look weather up for')
-    wp.set_defaults(func=weather)
+    # Add the chat command subparser
+    wp = subparsers.add_parser('chat', help='send a chat message to the bot')
+    wp.add_argument('message', nargs="+", help='the message to send to the bot')
+    wp.set_defaults(func=chat)
 
     # Add the run command subparser
     rp = subparsers.add_parser('run', help='run the weather chatbot')

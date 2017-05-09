@@ -115,6 +115,9 @@ class Bot(object):
         slack_api_key = environ_default(config, "slack_api_key", "SLACK_ACCESS_TOKEN", required=True)
         self.slack  = SlackClient(slack_api_key)
 
+        # Fetch and cache the current weather at startup
+        self.weather()
+
     @memoized
     def commands(self):
         """
@@ -202,6 +205,7 @@ class Bot(object):
             )
 
         # If we've made it here, we've been shutdown
+        # TODO: convert to logging functionality
         print("bot has been gracefully shutdown")
 
     def stop(self):
@@ -235,8 +239,114 @@ class Bot(object):
         Handles messages that are directed at the bot by parsing commands.
         """
         # Log the message received
+        # TODO: change to standardized logging functionality
         print("[{}] {}".format(msg["ts"], msg["text"]))
 
+        # Track if an unknown command has occurred
+        unknown = True
+
+        # Determine if the message matches any commands
+        for name, command in self.commands.items():
+            match = command.search(msg["text"])
+            if match is not None:
+                unknown = False # We've found at least one command match.
+
+                # Get the method that handles this command
+                handler = getattr(self, "handle_{}_command".format(name), None)
+                if handler is None:
+                    raise NotImplementedError(
+                        "{} command not yet handled".format(name)
+                    )
+
+                try:
+                    # Handle the command
+                    handler(msg)
+                except HanishException as e:
+                    # Respond with hanish exceptions
+                    self.post(msg['channel'], str(e))
+                except Exception as e:
+                    # Fatal exception has occurred
+                    self.post(msg['channel'], "A fatal exception has occurred!")
+
+        # Handle any unknown commands
+        if unknown:
+            self.handle_unknown_command(msg)
+
+    def handle_weather_command(self, msg):
+        """
+        Have the chatbot respond to the weather command.
+        """
+        # Parse the weather command arguments
+        # NOTE: only the first weather command will be matched
+        # TODO: handle all unique weather commands/arguments
+        match  = self.commands['weather'].search(msg['text'])
+        period = match.group(1).lower()
+        weather = self.weather()
+
+        if period == "now":
+            currently = weather['currently']
+            hourly = weather['hourly']
+            response  = (
+                u"Currently in {} it is {:0.1f}\u00b0F and {}. "
+                u"It will be {}"
+            ).format(
+                weather['zipcode'], currently['temperature'],
+                currently['summary'].lower(), hourly['summary'].lower(),
+            )
+
+        if period == "tomorrow":
+            response = weather['daily']['summary']
+
+        self.post(msg['channel'], response)
+
+    def handle_location_command(self, msg):
+        """
+        Have the chatbot respond to the location command.
+        """
+        # Parse the location command arguments
+        for match in self.commands['location'].finditer(msg['text']):
+            zipcode = match.group(1)
+            weather = self.weather(zipcode)
+
+            currently = weather['currently']
+            hourly = weather['hourly']
+            response  = (
+                u"Currently in {} it is {:0.1f}\u00b0F and {}. "
+                u"It will be {}"
+            ).format(
+                weather['zipcode'], currently['temperature'],
+                currently['summary'].lower(), hourly['summary'].lower(),
+            )
+
+            self.post(msg['channel'], response)
+
+    def handle_darksky_command(self, msg):
+        """
+        Have the chatbot respond to the darksky command.
+        """
+        response = "I have made {} Dark Sky API calls today.".format(
+            self.darksky.n_api_calls
+        )
+        self.post(msg['channel'], response)
+
+    def handle_unknown_command(self, msg):
+        """
+        Have the chatbot respond when an unknown command is sent.
+        """
+        response = (
+            "I'm happy to chat about the weather, "
+            " unfortunately I don't understand what you're asking."
+        )
+
+        self.post(msg['channel'], response)
+
+    def post(self, channel, response):
+        """
+        Helper function to post a message as the slackbot.
+        """
+        self.slack.api_call(
+            "chat.postMessage", channel=channel, text=response, as_user=True
+        )
 
     def weather(self, zipcode=None):
         """
@@ -256,12 +366,13 @@ class Bot(object):
         msg: string
             Returns a string of the number of dark sky api calls made.
         """
+        # Resolve the latitutde and longitude from the zipcode and query
+        # weather. NOTE: this will utilize cacheing on the API if available.
         zipcode  = zipcode or self.zipcode
         lat, lon = self.zipdb.lookup(zipcode)
         forecast = self.darksky.forecast(lat, lon)
 
-        # TODO: simply return the weather in JSON and let the CLI handle print
-        weather  = forecast['currently']
-        weather['zipcode'] = zipcode
-        print(json.dumps(weather, indent=2))
-        return "{} Dark Sky API calls made today".format(self.darksky.n_api_calls)
+        # Add additional information and return
+        forecast['zipcode'] = zipcode
+        forecast['api_calls'] = self.darksky.n_api_calls
+        return forecast

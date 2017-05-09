@@ -50,7 +50,7 @@ def runbot(args):
     Connect to the Slack API and listen for weather queries.
     """
     bot = hanish.Bot()
-    bot.run() 
+    bot.run()
 
 
 ##########################################################################

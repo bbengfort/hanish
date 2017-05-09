@@ -27,6 +27,7 @@ import time
 import signal
 
 from .exceptions import *
+from .utils import memoized
 from .darksky import DarkSky
 from .zipcode import ZipCodeDB
 from slackclient import SlackClient
@@ -113,40 +114,60 @@ class Bot(object):
         # Initialize the Slack API
         slack_api_key = environ_default(config, "slack_api_key", "SLACK_ACCESS_TOKEN", required=True)
         self.slack  = SlackClient(slack_api_key)
-        self._botid = environ_default(config, "slack_bot_id", "SLACK_BOT_ID")
 
-    @property
+    @memoized
+    def commands(self):
+        """
+        This property compiles regular expressions for the commands that are
+        parsed from messages that are @ mentioned to the bot. Currently
+        implemented commands are:
+
+            - weather (now|tomorrow)
+            - weather in (zipcode)
+            - darksky limit
+
+        The @botid can appear either before or after the command, and multiple
+        commands can be included per line. The only rule is that the command
+        syntax is unbroken except by white space.
+
+        All commands are case insensitive.
+        """
+        # TODO: Refactor commands into their own module since I decoupled the
+        # command from the @botid string (which is why it was here originally)
+        return {
+            'weather': re.compile(r'weather\s+(now|tomorrow)', re.I),
+            'location': re.compile(r'weather\s+in\s+(\d{5})', re.I),
+            'darksky': re.compile(r'darksky\s+limit', re.I),
+        }
+
+    @memoized
     def botid(self):
         """
         Looks up the bot id by name from the users list, then memoizes it.
         """
-        if not self._botid:
-            # Look up the bot id from the users list
-            resp = self.slack.api_call("users.list")
-            if resp.get("ok"):
-                # Retrieve the users and find the bot
-                for member in resp.get("members"):
-                    if 'name' in member and member.get('name') == self.name:
-                        self._botid = member.get('id')
-                        break
-                else:
-                    raise SlackException(
-                        "could not find an ID for a bot named {}".format(self.name)
-                    )
 
-        return self._botid
+        # Look up the bot id from the users list
+        resp = self.slack.api_call("users.list")
+        if resp.get("ok"):
+            # Retrieve the users and find the bot
+            for member in resp.get("members"):
+                if 'name' in member and member.get('name') == self.name:
+                    return member.get('id')
 
-    @property
+        # If we get this far without a botid, we have a problem.
+        raise SlackException(
+            "could not find an ID for a bot named {}".format(self.name)
+        )
+
+    @memoized
     def atbotid(self):
         """
         Computes and memoizes the @botid regular expression for directed
         messages that may contain commands. E.g. the pattern for <@botid>.
         """
-        if not hasattr(self, "_atbotid") or not self._atbotid:
-            self._atbotid = re.compile(
-                re.escape("<@{}>".format(self.botid)), re.I
-            )
-        return self._atbotid
+        return re.compile(
+            re.escape("<@{}>".format(self.botid)), re.I
+        )
 
     def run(self):
         """

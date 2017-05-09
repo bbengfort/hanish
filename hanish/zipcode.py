@@ -73,7 +73,7 @@ class ZipCodeDB(object):
         db = klass()
         cursor = db.conn.cursor()
 
-        # Read the data from the CSV file and insert into db 
+        # Read the data from the CSV file and insert into db
         with open(path, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
@@ -105,6 +105,23 @@ class ZipCodeDB(object):
         self.conn.close()
         self.conn = None
 
+    def execute(self, sql, *args, **kwargs):
+        """
+        Helper function that creates a cursor and executes a single SQL
+        statement, returning the cursor to read the results of the query.
+        """
+        # Check the connection
+        if self.conn is None:
+            raise DatabaseError(
+                "Zip Code database has been closed and removed from memory"
+            )
+
+        # Execute the query and return
+        cursor = self.conn.cursor()
+        cursor.execute(sql, *args, **kwargs)
+        return cursor
+
+
     def lookup(self, zipcode):
         """
         Lookup the geographic coordinates for a given U.S. postal code. If the
@@ -123,15 +140,9 @@ class ZipCodeDB(object):
         longitude: float
             The longitude portion of the geo-coordinates for the zip code
         """
-        # Check the connection
-        if self.conn is None:
-            raise DatabaseError(
-                "Zip Code database has been closed and removed from memory"
-            )
 
         # Execute the query
-        cursor = self.conn.cursor()
-        cursor.execute(
+        cursor = self.execute(
             "SELECT latitude, longitude FROM zipcodes WHERE zipcode=?", (zipcode,)
         )
 
@@ -143,3 +154,15 @@ class ZipCodeDB(object):
             )
 
         return value
+
+    def count(self):
+        """
+        Returns the number of zipcodes that are currently in the database.
+        """
+        # Execute the query
+        cursor = self.execute(
+            "SELECT count(zipcode) FROM zipcodes"
+        )
+
+        # Fetch, validate and return the value
+        return cursor.fetchone()[0]

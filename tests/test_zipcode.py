@@ -73,3 +73,10 @@ class ZipCodeDBTests(unittest.TestCase):
         for zipcode, _ in table:
             with self.assertRaises(HanishValueError):
                 zipdb.lookup(zipcode)
+
+    def test_database_count(self):
+        """
+        Test counting the number of zipcodes in the database
+        """
+        zipdb = ZipCodeDB.load(ZIPCODES)
+        self.assertEqual(zipdb.count(), 33144)
